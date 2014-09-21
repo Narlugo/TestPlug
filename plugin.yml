@@ -1,0 +1,28 @@
+name: PlugTest
+main: com.github.xenation.testplug.TestPlug
+version: 0.01
+description: No Description
+author: Xenation
+commands:
+  chat:
+    description: changes your chat channel!
+  countdown:
+    description: Makes a cool countdown!
+  team:
+    description: tells you your team
+  heal:
+    description: heals the player!
+  getpos:
+    description: Gives the exact position of the player
+  setb:
+    description: Mass Block Spawner!
+  zones:
+    description: Zones Manage Command - add remove set list
+  xspawn:
+    description: Xen-Spawn Command - set get tp
+  weatherlock:
+    description: Locks or Unlocks the weather!
+  blockres:
+    description: Block Respawn - lock time
+  warp:
+    description: Warps the player to the specified world (creates it if it doesn't exist)
