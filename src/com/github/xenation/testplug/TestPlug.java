@@ -8,6 +8,8 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -55,7 +57,7 @@ public class TestPlug extends JavaPlugin {
 		YamlConfiguration cfg = new YamlConfiguration();
 		//BreakLog.yml File
 		File breakfile = new File(folder, "BreakLog.yml");
-		//YamlConfiguration breakconfig = new YamlConfiguration();
+		YamlConfiguration breakconfig = new YamlConfiguration();
 		//Zones.yml File
 		File zonesFile = new File(folder, "Zones.yml");
 		YamlConfiguration zonesCfg = new YamlConfiguration();
@@ -185,6 +187,37 @@ public class TestPlug extends JavaPlugin {
 	
 	//Called when plugin stops
 	public void onDisable() {
+		//Plugin Folder
+		File folder = this.getDataFolder();
+		File breakfile = new File(folder, "BreakLog.yml");
+		YamlConfiguration breakconfig = new YamlConfiguration();
+		
+		//Respawns All Blocks stored in BreakLog.yml
+		if (blockResLock == true) {
+			for (String blockPos: breakconfig.getKeys(false)) {
+				String pos[] = blockPos.split("/");
+				World w = Bukkit.getWorld("world");
+				Location loc = Bukkit.getWorld("world").getSpawnLocation();
+				loc.zero();
+				loc.setWorld(w);
+				loc.setX(Integer.valueOf(pos[0]));
+				loc.setY(Integer.valueOf(pos[1]));
+				loc.setZ(Integer.valueOf(pos[2]));
+				Block b = loc.getBlock();
+				b.setType(Material.valueOf(breakconfig.getString(blockPos+".Type")));
+				try {
+					breakconfig.load(breakfile);
+				} catch (IOException | InvalidConfigurationException e) {
+					e.printStackTrace();
+				}
+				breakconfig.set(blockPos, null);
+				try {
+					breakconfig.save(breakfile);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		
 	}
 }

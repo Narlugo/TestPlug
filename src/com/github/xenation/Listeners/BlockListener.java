@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.material.MaterialData;
 
 import com.github.xenation.testplug.TestPlug;
 
@@ -74,6 +76,10 @@ public class BlockListener implements Listener{
 					loc.setY(Integer.valueOf(pos[1]));
 					loc.setZ(Integer.valueOf(pos[2]));
 					Block b = loc.getBlock();
+					//BlockState bState = b.getState();
+					//bState.setType(Material.valueOf(breakconfig.getString(blockPos+".Type")));
+					//MaterialData bData = bState.getData();
+					//bState.setData(new MaterialData(Integer.valueOf(breakconfig.getString(blockPos+".Data"))));
 					b.setType(Material.valueOf(breakconfig.getString(blockPos+".Type")));
 					player.sendMessage("Block respawn at: "+b.getLocation().getBlockX()+", "+b.getLocation().getBlockY()+", "+b.getLocation().getBlockZ());
 					try {
@@ -90,6 +96,7 @@ public class BlockListener implements Listener{
 				}
 			}
 			
+			//Saves the breaked block
 			try {
 				breakconfig.load(breakfile);
 			} catch (IOException | InvalidConfigurationException e) {
@@ -98,12 +105,14 @@ public class BlockListener implements Listener{
 			ConfigurationSection blockSec = breakconfig.createSection(block.getX() + "/" + block.getY() + "/" + block.getZ());
 			blockSec.set("Type", block.getType().toString());
 			blockSec.set("Time", System.currentTimeMillis());
+			blockSec.set("Data", block.getState().getData());
 			try {
 				breakconfig.save(breakfile);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
+			//BreakLog update notifier
 			for (Player p: Bukkit.getServer().getOnlinePlayers()) {
 				if (p.getName().equalsIgnoreCase("Xenation")) {
 					p.sendMessage(ChatColor.GOLD + "DEV -> "
@@ -112,5 +121,4 @@ public class BlockListener implements Listener{
 			}
 		}
 	}
-	
 }
