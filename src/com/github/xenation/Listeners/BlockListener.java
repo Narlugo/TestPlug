@@ -1,41 +1,24 @@
 package com.github.xenation.Listeners;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.material.MaterialData;
 
 import com.github.xenation.testplug.TestPlug;
 
 public class BlockListener implements Listener{
 	
-	public File folder;
-	public File breakfile;
-	public YamlConfiguration breakconfig;
-	
 	public TestPlug plugin;
 	
 	public BlockListener(TestPlug plugin) {
 		this.plugin = plugin;
-		
-		this.folder = plugin.getDataFolder();
-		this.breakfile = new File(folder, "BreakLog.yml");
-		this.breakconfig = new YamlConfiguration();
 	}
 	
 	@EventHandler(priority = EventPriority.NORMAL)
@@ -65,52 +48,30 @@ public class BlockListener implements Listener{
 		
 		//Block Re-spawn
 		if (plugin.blockResLock == true) {
-			for (String blockPos: breakconfig.getKeys(false)) {
-				if (System.currentTimeMillis() >= breakconfig.getLong(blockPos+".Time") + plugin.blockResTime) {
-					String pos[] = blockPos.split("/");
-					World w = Bukkit.getWorld("world");
-					Location loc = Bukkit.getWorld("world").getSpawnLocation();
-					loc.zero();
-					loc.setWorld(w);
-					loc.setX(Integer.valueOf(pos[0]));
-					loc.setY(Integer.valueOf(pos[1]));
-					loc.setZ(Integer.valueOf(pos[2]));
-					Block b = loc.getBlock();
-					//BlockState bState = b.getState();
-					//bState.setType(Material.valueOf(breakconfig.getString(blockPos+".Type")));
-					//MaterialData bData = bState.getData();
-					//bState.setData(new MaterialData(Integer.valueOf(breakconfig.getString(blockPos+".Data"))));
-					b.setType(Material.valueOf(breakconfig.getString(blockPos+".Type")));
-					player.sendMessage("Block respawn at: "+b.getLocation().getBlockX()+", "+b.getLocation().getBlockY()+", "+b.getLocation().getBlockZ());
-					try {
-						breakconfig.load(breakfile);
-					} catch (IOException | InvalidConfigurationException e) {
-						e.printStackTrace();
-					}
-					breakconfig.set(blockPos, null);
-					try {
-						breakconfig.save(breakfile);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+			//HashMap Spawn
+			ArrayList<Block> delBlocks = new ArrayList<Block>();
+			for (Block b: plugin.blocksSet.keySet()) {
+				if (System.currentTimeMillis() >= plugin.blocksTimesMap.get(plugin.blocksSet.get(b)) + plugin.blockResTime) {
+					plugin.blocksStatesMap.get(plugin.blocksSet.get(b)).update(true);
+					delBlocks.add(b);
 				}
+			}
+			for (int d = 0; d != delBlocks.toArray().length; d++) {
+				Block b = delBlocks.get(d);
+				plugin.blocksTimesMap.remove(plugin.blocksSet.get(b));
+				plugin.blocksStatesMap.remove(plugin.blocksSet.get(b));
+				plugin.blocksSet.remove(b);
 			}
 			
 			//Saves the breaked block
-			try {
-				breakconfig.load(breakfile);
-			} catch (IOException | InvalidConfigurationException e) {
-				e.printStackTrace();
+			//HashMap Save
+			double unique = Math.random();
+			while (plugin.blocksSet.containsValue(unique) == true) {
+				unique = Math.random();
 			}
-			ConfigurationSection blockSec = breakconfig.createSection(block.getX() + "/" + block.getY() + "/" + block.getZ());
-			blockSec.set("Type", block.getType().toString());
-			blockSec.set("Time", System.currentTimeMillis());
-			blockSec.set("Data", block.getState().getData());
-			try {
-				breakconfig.save(breakfile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			plugin.blocksSet.put(block, unique);
+			plugin.blocksStatesMap.put(unique, block.getState());
+			plugin.blocksTimesMap.put(unique, System.currentTimeMillis());
 			
 			//BreakLog update notifier
 			for (Player p: Bukkit.getServer().getOnlinePlayers()) {

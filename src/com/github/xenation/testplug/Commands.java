@@ -428,7 +428,7 @@ public class Commands implements CommandExecutor {
 			}
 			//Time Command
 			else if (args[0].equalsIgnoreCase("time")) {
-				plugin.blockResTime = Integer.valueOf(args[1]);
+				plugin.blockResTime = Long.valueOf(args[1]);
 				for (Player p: Bukkit.getServer().getOnlinePlayers()) {
 					if (p.isOp() == true) {
 						p.sendMessage(ChatColor.GOLD + "DEV -> "

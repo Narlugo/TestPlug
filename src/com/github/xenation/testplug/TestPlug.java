@@ -3,18 +3,13 @@ package com.github.xenation.testplug;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.block.BlockState;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,7 +18,6 @@ import com.github.xenation.Listeners.ChatListener;
 import com.github.xenation.Listeners.EntityListener;
 import com.github.xenation.Listeners.JoinListener;
 import com.github.xenation.Listeners.KillListener;
-import com.github.xenation.Listeners.SprintListener;
 import com.github.xenation.Listeners.WeatherListener;
 
 public class TestPlug extends JavaPlugin {
@@ -31,12 +25,15 @@ public class TestPlug extends JavaPlugin {
 	public HashMap<String, String> chat = new HashMap<String, String>();
 	public HashMap<String, String> countdown = new HashMap<String, String>();
 	public HashMap<String, HashMap<String, HashMap<String, Param>>> zoneMap = new HashMap<String, HashMap<String, HashMap<String, Param>>>();
-	public HashMap<Block, Long> blocksMap = new HashMap<Block, Long>();
+	
+	public HashMap<Block, Double> blocksSet = new HashMap<Block, Double>();
+	public HashMap<Double, BlockState> blocksStatesMap = new HashMap<Double, BlockState>();
+	public HashMap<Double, Long> blocksTimesMap = new HashMap<Double, Long>();
 	
 	public boolean weatherLock = true;
 	public boolean blockResLock = true;
 	
-	public int blockResTime = 120000;
+	public Long blockResTime = 120000L;
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -55,9 +52,6 @@ public class TestPlug extends JavaPlugin {
 		//Configuration.yml File
 		File config = new File(folder, "Configuration.yml");
 		YamlConfiguration cfg = new YamlConfiguration();
-		//BreakLog.yml File
-		File breakfile = new File(folder, "BreakLog.yml");
-		YamlConfiguration breakconfig = new YamlConfiguration();
 		//Zones.yml File
 		File zonesFile = new File(folder, "Zones.yml");
 		YamlConfiguration zonesCfg = new YamlConfiguration();
@@ -73,14 +67,6 @@ public class TestPlug extends JavaPlugin {
 		if (!(config).exists()) {
 			try {
 				config.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		//checks if the BreakFile.yml file exists
-		if (!(breakfile).exists()) {
-			try {
-				breakfile.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -166,58 +152,13 @@ public class TestPlug extends JavaPlugin {
 		getCommand("weatherlock").setExecutor(new Commands(this));
 		getCommand("blockres").setExecutor(new Commands(this));
 		getCommand("warp").setExecutor(new Commands(this));
-		
-		/*boolean breakLogScan = true;
-		while (breakLogScan == true) {
-			for (String key: breakconfig.getKeys(false)) {
-				if (System.currentTimeMillis() >= (breakconfig.getInt(key+".Time") + 10000)) {
-					String split[] = key.split("/");
-					int posX = Integer.parseInt(split[0]);
-					int posY = Integer.parseInt(split[1]);
-					int posZ = Integer.parseInt(split[2]);
-					
-					for (Player p: Bukkit.getServer().getOnlinePlayers()) {
-						p.sendMessage("Block breaked at:" + posX + ", " + posY + ", " + posZ);
-					}
-					
-				}
-			}
-		}*/
 	}
 	
 	//Called when plugin stops
 	public void onDisable() {
-		//Plugin Folder
-		File folder = this.getDataFolder();
-		File breakfile = new File(folder, "BreakLog.yml");
-		YamlConfiguration breakconfig = new YamlConfiguration();
-		
-		//Respawns All Blocks stored in BreakLog.yml
-		if (blockResLock == true) {
-			for (String blockPos: breakconfig.getKeys(false)) {
-				String pos[] = blockPos.split("/");
-				World w = Bukkit.getWorld("world");
-				Location loc = Bukkit.getWorld("world").getSpawnLocation();
-				loc.zero();
-				loc.setWorld(w);
-				loc.setX(Integer.valueOf(pos[0]));
-				loc.setY(Integer.valueOf(pos[1]));
-				loc.setZ(Integer.valueOf(pos[2]));
-				Block b = loc.getBlock();
-				b.setType(Material.valueOf(breakconfig.getString(blockPos+".Type")));
-				try {
-					breakconfig.load(breakfile);
-				} catch (IOException | InvalidConfigurationException e) {
-					e.printStackTrace();
-				}
-				breakconfig.set(blockPos, null);
-				try {
-					breakconfig.save(breakfile);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+		//Respawns the Blocks in blocksSet HashMap
+		for (Block b: blocksSet.keySet()) {
+			blocksStatesMap.get(blocksSet.get(b)).update(true);
 		}
-		
 	}
 }
