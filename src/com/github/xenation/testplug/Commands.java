@@ -59,7 +59,7 @@ public class Commands implements CommandExecutor {
 				if (found == true) {
 					plugin.chat.put(player.getName(), args[0].toLowerCase());
 				} else {
-					player.sendMessage(ChatColor.DARK_GREEN + "Player not found!");
+					player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Player not found");
 				}
 			}
 		}
@@ -84,12 +84,7 @@ public class Commands implements CommandExecutor {
 				Bukkit.getServer().reload();
 			}
 			else {
-				for (Player p: Bukkit.getServer().getOnlinePlayers()) {
-					p.sendMessage(ChatColor.GOLD + "DEV -> "
-							+ ChatColor.DARK_AQUA + "countdown command called!\n"
-									+ ChatColor.BLUE + "       ERROR: "
-									+ ChatColor.DARK_AQUA + "invalid number of arguments");
-				}
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid Arguments");
 			}
 		}
 		
@@ -108,7 +103,7 @@ public class Commands implements CommandExecutor {
 			if (found == true || args.length == 0) {
 				player.sendMessage(ChatColor.DARK_GREEN + "Team of " + player2.getName() +": " + ChatColor.GREEN + player2.getScoreboard().getPlayerTeam(player).getDisplayName());
 			} else {
-				player.sendMessage(ChatColor.DARK_GREEN + "Player not found!");
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Player not found");
 			}
 		}
 		
@@ -116,6 +111,8 @@ public class Commands implements CommandExecutor {
 		if (label.equalsIgnoreCase("heal")) {
 			player.setHealth(20);
 			player.setFoodLevel(20);
+			player.sendMessage(ChatColor.GREEN + "Healed!");
+
 		}
 		
 		//Getpos Command
@@ -139,15 +136,11 @@ public class Commands implements CommandExecutor {
 									+ "\n        Z: " + player.getLocation().getBlockZ());
 				}
 			} else {
-				for (Player p: Bukkit.getServer().getOnlinePlayers()) {
-					p.sendMessage(ChatColor.GOLD + "DEV -> "
-							+ ChatColor.DARK_AQUA + "Player Pos Called\n"
-									+ ChatColor.BLUE + "      Player not found!");
-				}
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Player not found");
 			}
 		}
 		
-		//Set Block Command
+		//Set Block Command (Bugged)
 		if (label.equalsIgnoreCase("setb")) {
 			
 			if (args.length != 0) {
@@ -203,141 +196,265 @@ public class Commands implements CommandExecutor {
 				}
 			}
 			else {
-				for (Player p: Bukkit.getServer().getOnlinePlayers()) {
-					p.sendMessage(ChatColor.GOLD + "DEV -> "
-							+ ChatColor.DARK_AQUA + "Set Block Called!\n"
-									+ ChatColor.BLUE + "       ERROR: "
-									+ ChatColor.DARK_AQUA + "invalid number of arguments");
-				}
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid Arguments");
 			}
 		}
 		
 		//Zones Command
 		if (label.equalsIgnoreCase("zones")) {
-			if (args.length != 0) {
-				//Add Command
-				if (args[0].equalsIgnoreCase("add")) {
-					//Adds the new Zone
-					String zoneName = args[1];																	//Gets the zoneName from the Second Argument
-					plugin.zoneMap.put(zoneName, new HashMap<String, HashMap<String, Param>>());				//Creates main Zone HashMap
-					plugin.zoneMap.get(zoneName).put("Positions", new HashMap<String, Param>());				//Creates Positions HashMap in main Zone HashMap
-					plugin.zoneMap.get(zoneName).get("Positions").put("pos1", new Param(player.getLocation()));	//Creates pos1 Param in Positions HashMap in main Zone HashMap
-					plugin.zoneMap.get(zoneName).get("Positions").put("pos2", new Param(player.getLocation()));	//Creates pos2 Param in Positions HashMap in main Zone HashMap
-					for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
-						if (p.isOp() == true) {
-							p.sendMessage(ChatColor.GOLD + "DEV -> "
-									+ ChatColor.DARK_PURPLE + "Added Zone: " + args[1]);
-						}
-					}
-				}
-				//Remove command
-				else if (args[0].equalsIgnoreCase("remove")) {
-					//Removes the zone in the zones HashMap
-					plugin.zoneMap.remove(args[1]);
-					try {							//Loads Zones Config
-						zonesCfg.load(zonesFile);
-					} catch (IOException | InvalidConfigurationException e) {
-						e.printStackTrace();
-					}
-					zonesCfg.set(args[1], null);	//Removes the zone Section
-					try {							//Save Zones Config
-						zonesCfg.save(zonesFile);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
-						if (p.isOp() == true) {
-							p.sendMessage(ChatColor.GOLD + "DEV -> "
-									+ ChatColor.DARK_PURPLE + "Removed Zone: " + args[1]);
-						}
-					}
-				}
-				//Set Command
-				else if (args[0].equalsIgnoreCase("set")) {
-					String zoneName = args[1];		//Gets the zoneName from the Second Argument
-					String pos = args[2];			//Gets the pos to set ("pos1" or "pos2")
-					for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
-						p.sendMessage(ChatColor.GOLD + "DEV -> "
-								+ ChatColor.DARK_AQUA + "Set Safe Zone Called");
-					}
-					if (pos.equalsIgnoreCase("pos1")) {//Pos1
-						//Sets the Pos1 Param in Positions HashMap in main zone HashMap to the Command Sender Position
-						plugin.zoneMap.get(zoneName).get("Positions").get("pos1").set(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(), player.getLocation().getPitch(), player.getLocation().getYaw());
-						
+			if (player.isOp()) {
+				if (args.length != 0) {
+					//Add Command
+					if (args[0].equalsIgnoreCase("add")) {
+						//Adds the new Zone
+						String zoneName = args[1];																	//Gets the zoneName from the Second Argument
+						plugin.zoneMap.put(zoneName, new HashMap<String, HashMap<String, Param>>());				//Creates main Zone HashMap
+						plugin.zoneMap.get(zoneName).put("Positions", new HashMap<String, Param>());				//Creates Positions HashMap in main Zone HashMap
+						plugin.zoneMap.get(zoneName).put("Params", new HashMap<String, Param>());
+						plugin.zoneMap.get(zoneName).get("Params").put("TNT", new Param(true));
+						plugin.zoneMap.get(zoneName).get("Params").put("Break", new Param(true));
+						plugin.zoneMap.get(zoneName).get("Params").put("Build", new Param(true));
+						plugin.zoneMap.get(zoneName).get("Params").put("Access", new Param(true));
+						plugin.zoneMap.get(zoneName).get("Params").put("Use", new Param(true));
 						for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
-							p.sendMessage(ChatColor.GOLD + "DEV -> "
-									+ ChatColor.DARK_AQUA + "Set Safe Zone Pos1 Called\n"
-											+ ChatColor.BLUE + "      " + zoneName + "Pos1: "
-											+ ChatColor.DARK_AQUA + "\n        X: " + player.getLocation().getBlockX()
-											+ "\n        Y: " + player.getLocation().getBlockY()
-											+ "\n        Z: " + player.getLocation().getBlockZ());
+							if (p.isOp() == true) {
+								p.sendMessage(ChatColor.GOLD + "DEV -> "
+										+ ChatColor.DARK_PURPLE + "Added Zone: " + args[1]);
+							}
 						}
 					}
-					if (pos.equalsIgnoreCase("pos2")) {//Pos2
-						//Sets the Pos2 Param in Positions HashMap in main zone HashMap to the Command Sender Position
-						plugin.zoneMap.get(zoneName).get("Positions").get("pos2").set(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(), player.getLocation().getPitch(), player.getLocation().getYaw());
-						
-						for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
-							p.sendMessage(ChatColor.GOLD + "DEV -> "
-									+ ChatColor.DARK_AQUA + "Set Safe Zone Pos2 Called\n"
-											+ ChatColor.BLUE + "      " + zoneName + "Pos2: "
-											+ ChatColor.DARK_AQUA + "\n        X: " + player.getLocation().getBlockX() 
-											+ "\n        Y: " + player.getLocation().getBlockY()
-											+ "\n        Z: " + player.getLocation().getBlockZ());
+					//Remove command
+					else if (args[0].equalsIgnoreCase("remove")) {
+						//Removes the zone in the zones HashMap
+						if (plugin.zoneMap.containsKey(args[1]) == false) {
+							player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid zoneName");
+						} else {
+							plugin.zoneMap.remove(args[1]);	//Removes the zone in HashMap
+							try {							//Loads Zones Config
+								zonesCfg.load(zonesFile);
+							} catch (IOException | InvalidConfigurationException e) {
+								e.printStackTrace();
+							}
+							zonesCfg.set(args[1], null);	//Removes the zone Section
+							try {							//Save Zones Config
+								zonesCfg.save(zonesFile);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
+								if (p.isOp() == true) {
+									p.sendMessage(ChatColor.GOLD + "DEV -> "
+											+ ChatColor.DARK_PURPLE + "Removed Zone: " + args[1]);
+								}
+							}
 						}
 					}
-					//Changes the pos1 and pos2 Locations to fit the Detecting scripts
-					if (plugin.zoneMap.get(zoneName).size() >= 2) {
-						if (plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockX() > plugin.zoneMap.get(zoneName).get("pos2").get("Positions").getLoc().getBlockX()) {
-							int tmp = plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockX();
-							plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().setX(plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockX());
-							plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().setX(tmp);
+					//Set Command
+					else if (args[0].equalsIgnoreCase("set")) {
+						String zoneName = args[1];		//Gets the zoneName from the Second Argument
+						String pos = args[2];			//Gets the pos to set ("pos1" or "pos2")
+						if (plugin.zoneMap.containsKey(args[1]) == false) {
+							player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid zoneName");
+						} else {
+							for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
+								p.sendMessage(ChatColor.GOLD + "DEV -> "
+										+ ChatColor.DARK_AQUA + "Set Safe Zone Called");
+							}
+							if (pos.equalsIgnoreCase("pos1")) {//Pos1
+								//Sets the Pos1 Param in Positions HashMap in main zone HashMap to the Command Sender Position
+								if (plugin.zoneMap.get(zoneName).get("Positions").containsKey("pos1") == false) {
+									plugin.zoneMap.get(zoneName).get("Positions").put("pos1", new Param(player.getLocation()));
+								}
+								plugin.zoneMap.get(zoneName).get("Positions").get("pos1").setLoc(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(), player.getLocation().getPitch(), player.getLocation().getYaw());
+								
+								for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
+									p.sendMessage(ChatColor.GOLD + "DEV -> "
+											+ ChatColor.DARK_AQUA + "Set Safe Zone Pos1 Called\n"
+													+ ChatColor.BLUE + "      " + zoneName + "Pos1: "
+													+ ChatColor.DARK_AQUA + "\n        X: " + player.getLocation().getBlockX()
+													+ "\n        Y: " + player.getLocation().getBlockY()
+													+ "\n        Z: " + player.getLocation().getBlockZ());
+								}
+							}
+							if (pos.equalsIgnoreCase("pos2")) {//Pos2
+								//Sets the Pos2 Param in Positions HashMap in main zone HashMap to the Command Sender Position
+								if (plugin.zoneMap.get(zoneName).get("Positions").containsKey("pos2") == false) {
+									plugin.zoneMap.get(zoneName).get("Positions").put("pos2", new Param(player.getLocation()));
+								}
+								plugin.zoneMap.get(zoneName).get("Positions").get("pos2").setLoc(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ(), player.getLocation().getPitch(), player.getLocation().getYaw());
+								
+								for (Player p: Bukkit.getServer().getOnlinePlayers()) {//DEV message
+									p.sendMessage(ChatColor.GOLD + "DEV -> "
+											+ ChatColor.DARK_AQUA + "Set Safe Zone Pos2 Called\n"
+													+ ChatColor.BLUE + "      " + zoneName + "Pos2: "
+													+ ChatColor.DARK_AQUA + "\n        X: " + player.getLocation().getBlockX() 
+													+ "\n        Y: " + player.getLocation().getBlockY()
+													+ "\n        Z: " + player.getLocation().getBlockZ());
+								}
+							}
+							//Changes the pos1 and pos2 Locations to fit the Detecting scripts
+							if (plugin.zoneMap.get(zoneName).get("Positions").containsKey("pos1") && plugin.zoneMap.get(zoneName).get("Positions").containsKey("pos2")) {
+								if (plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockX() > plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockX()) {
+									int tmp = plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockX();
+									plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().setX(plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockX());
+									plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().setX(tmp);
+								}
+								if (plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockZ() > plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockZ()) {
+									int tmp = plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockZ();
+									plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().setZ(plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockZ());
+									plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().setZ(tmp);
+								}
+							}
+							
+							try {//Loads Zones Config
+								zonesCfg.load(zonesFile);
+							} catch (IOException | InvalidConfigurationException e) {
+								e.printStackTrace();
+							}
+							//Builds the Config Sections if they don't exist
+							ConfigurationSection zoneSec;
+							if (zonesCfg.contains(zoneName) == false) {
+								zoneSec = zonesCfg.createSection(zoneName);					//Creates Zone Section
+							} else {
+								zoneSec = zonesCfg.getConfigurationSection(zoneName);		//Gets Zone Section
+							}
+							if (zonesCfg.contains(zoneName+".Positions") == false) {
+								ConfigurationSection zoneSecPos = zoneSec.createSection("Positions");	//Creates Positions Section in Zone Section
+								if (zonesCfg.contains(zoneName+".Positions."+pos) == false) {
+									@SuppressWarnings("unused")
+									ConfigurationSection zoneSecPos1 = zoneSecPos.createSection(pos);//Creates pos1 Section in Positions Section in Zone Section
+								}
+							}
+							zonesCfg.set(zoneName+".Positions."+pos+".X", plugin.zoneMap.get(zoneName).get("Positions").get(pos).getLoc().getBlockX());//Sets the pos X value in Config
+							zonesCfg.set(zoneName+".Positions."+pos+".Z", plugin.zoneMap.get(zoneName).get("Positions").get(pos).getLoc().getBlockZ());//Sets the pos Z value in Config
+							try {//Saves Zones Config
+								zonesCfg.save(zonesFile);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
-						if (plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockZ() > plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockZ()) {
-							int tmp = plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().getBlockZ();
-							plugin.zoneMap.get(zoneName).get("Positions").get("pos1").getLoc().setZ(plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().getBlockZ());
-							plugin.zoneMap.get(zoneName).get("Positions").get("pos2").getLoc().setZ(tmp);
+					}
+					//List Command
+					else if (args[0].equalsIgnoreCase("list")) {
+						String str = "";
+						for (String zone: plugin.zoneMap.keySet()) {//Builds the String to display with all the Keys in zoneMap
+							str = str + zone + ", ";
 						}
-					}
-					
-					try {//Loads Zones Config
-						zonesCfg.load(zonesFile);
-					} catch (IOException | InvalidConfigurationException e) {
-						e.printStackTrace();
-					}
-					//Builds the Config Sections if they don't exist
-					if (zonesCfg.contains(zoneName+".Positions") == false) {
-						ConfigurationSection zoneSec = zonesCfg.createSection(zoneName);		//Creates Zone Section
-						ConfigurationSection zoneSecPos = zoneSec.createSection("Positions");	//Creates Positions Section in Zone Section
-						if (zonesCfg.contains(zoneName+".Positions."+pos) == false) {
-							@SuppressWarnings("unused")
-							ConfigurationSection zoneSecPos1 = zoneSecPos.createSection("pos1");//Creates pos1 Section in Positions Section in Zone Section
-						} else if (zonesCfg.contains(zoneName+".Positions."+pos) == false) {
-							@SuppressWarnings("unused")
-							ConfigurationSection zoneSecPos2 = zoneSecPos.createSection("pos2");//Creates pos2 Section in Positions Section in Zone Section
-						}
-					}
-					zonesCfg.set(zoneName+".Positions."+pos+".X", plugin.zoneMap.get(zoneName).get("Positions").get(pos).getLoc().getBlockX());//Sets the pos X value in Config
-					zonesCfg.set(zoneName+".Positions."+pos+".Z", plugin.zoneMap.get(zoneName).get("Positions").get(pos).getLoc().getBlockZ());//Sets the pos Z value in Config
-					try {//Saves Zones Config
-						zonesCfg.save(zonesFile);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				//List Command
-				else if (args[0].equalsIgnoreCase("list")) {
-					String str = "";
-					for (String zone: plugin.zoneMap.keySet()) {//Builds the String to display with all the Keys in zoneMap
-						str = str + zone + ", ";
-					}
-					if (player.isOp() == true) {//DEV message (denied to non-Operators)
 						player.sendMessage(ChatColor.GOLD + "DEV -> "
 								+ ChatColor.DARK_PURPLE + "Zones: " + str);
-					} else {//ERROR message for Players
-						player.sendMessage(ChatColor.RED + "ERROR: Acces Denied");
+					}
+					//Param Command
+					else if (args[0].equalsIgnoreCase("param")) {
+						boolean error = false;
+						String zoneName = args[2];
+						String param = "";
+						if (plugin.zoneMap.containsKey(args[2]) == false) {
+							player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid zoneName");
+							error = true;
+						} else {
+							//TNT Param
+							if (args[1].equalsIgnoreCase("TNT")) {
+								if (plugin.zoneMap.get(zoneName).get("Params").get("TNT").getBool() == true) {
+									plugin.zoneMap.get(zoneName).get("Params").get("TNT").setBool(false);
+								} else {
+									plugin.zoneMap.get(zoneName).get("Params").get("TNT").setBool(true);
+								}
+								player.sendMessage(ChatColor.GREEN + "Zone Param: TNT = " + plugin.zoneMap.get(zoneName).get("Params").get("TNT").getBool());
+								param = "TNT";
+							}
+							//Break Param
+							else if (args[1].equalsIgnoreCase("Break")) {
+								if (plugin.zoneMap.get(zoneName).get("Params").get("Break").getBool() == true) {
+									plugin.zoneMap.get(zoneName).get("Params").get("Break").setBool(false);
+								} else {
+									plugin.zoneMap.get(zoneName).get("Params").get("Break").setBool(true);
+								}
+								player.sendMessage(ChatColor.GREEN + "Zone Param: Break = " + plugin.zoneMap.get(zoneName).get("Params").get("Break").getBool());
+								param = "Break";
+							}
+							//Build Param
+							else if (args[1].equalsIgnoreCase("Build")) {
+								if (plugin.zoneMap.get(zoneName).get("Params").get("Build").getBool() == true) {
+									plugin.zoneMap.get(zoneName).get("Params").get("Build").setBool(false);
+								} else {
+									plugin.zoneMap.get(zoneName).get("Params").get("Build").setBool(true);
+								}
+								player.sendMessage(ChatColor.GREEN + "Zone Param: Build = " + plugin.zoneMap.get(zoneName).get("Params").get("Build").getBool());
+								param = "Build";
+							}
+							//Access Param
+							else if (args[1].equalsIgnoreCase("Access")) {
+								if (plugin.zoneMap.get(zoneName).get("Params").get("Access").getBool() == true) {
+									plugin.zoneMap.get(zoneName).get("Params").get("Access").setBool(false);
+								} else {
+									plugin.zoneMap.get(zoneName).get("Params").get("Access").setBool(true);
+								}
+								player.sendMessage(ChatColor.GREEN + "Zone Param: Access = " + plugin.zoneMap.get(zoneName).get("Params").get("Access").getBool());
+								param = "Acces";
+							}
+							//Use Param
+							else if (args[1].equalsIgnoreCase("Use")) {
+								if (plugin.zoneMap.get(zoneName).get("Params").get("Use").getBool() == true) {
+									plugin.zoneMap.get(zoneName).get("Params").get("Use").setBool(false);
+								} else {
+									plugin.zoneMap.get(zoneName).get("Params").get("Use").setBool(true);
+								}
+								player.sendMessage(ChatColor.GREEN + "Zone Param: Use = " + plugin.zoneMap.get(zoneName).get("Params").get("Use").getBool());
+								param = "Use";
+							}
+							//ERROR if wrong Param name
+							else {
+								player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid arguments");
+								error = true;
+							}
+						}
+						if (error != true) {
+							try {//Loads Zones Config
+								zonesCfg.load(zonesFile);
+							} catch (IOException | InvalidConfigurationException e) {
+								e.printStackTrace();
+							}
+							//Builds the Config Sections if they don't exist
+							if (zonesCfg.contains(zoneName+".Params") == false) {
+								ConfigurationSection zoneSec = zonesCfg.getConfigurationSection(zoneName);
+								@SuppressWarnings("unused")
+								ConfigurationSection zoneSecParam = zoneSec.createSection("Params");
+								zonesCfg.set(zoneName+".Params.TNT", true);
+								zonesCfg.set(zoneName+".Params.Break", true);
+								zonesCfg.set(zoneName+".Params.Build", true);
+								zonesCfg.set(zoneName+".Params.Access", true);
+								zonesCfg.set(zoneName+".Params.Use", true);
+							}
+							zonesCfg.set(zoneName+".Params."+param, plugin.zoneMap.get(zoneName).get("Params").get(param).getBool());
+							try {//Saves Zones Config
+								zonesCfg.save(zonesFile);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					//Get params Command
+					else if (args[0].equalsIgnoreCase("getparams")) {
+						String zoneName = args[1];
+						if (plugin.zoneMap.containsKey(args[1]) == false) {
+							player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid zoneName");
+						} else {
+							player.sendMessage(ChatColor.GREEN + "Params:"
+									+ "\n  Authorized:"
+									+ "\n    TNT = " + plugin.zoneMap.get(zoneName).get("Params").get("TNT").getBool()
+									+ "\n    Break = " + plugin.zoneMap.get(zoneName).get("Params").get("Break").getBool()
+									+ "\n    Build = " + plugin.zoneMap.get(zoneName).get("Params").get("Build").getBool()
+									+ "\n    Access = " + plugin.zoneMap.get(zoneName).get("Params").get("Access").getBool()
+									+ "\n    Use = " + plugin.zoneMap.get(zoneName).get("Params").get("Use").getBool());
+						}
+					} else {
+						player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid arguments");
 					}
 				}
+			}
+			//ERROR if player isn't Op
+			else {
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Access Denied");
 			}
 		}
 		

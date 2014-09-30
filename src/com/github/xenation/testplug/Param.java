@@ -38,7 +38,11 @@ public class Param {
 		return loc;
 	}
 	
-	public void set(double X, double Y, double Z, float Pitch, float Yaw) {
+	public void setLoc(double X, double Y, double Z, float Pitch, float Yaw) {
 		param = X + "/" + Y + "/" + Z + "/" + Pitch + "/" + Yaw;
+	}
+	
+	public void setBool(boolean bool) {
+		param = Boolean.toString(bool);
 	}
 }

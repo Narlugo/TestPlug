@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 
 import com.github.xenation.testplug.TestPlug;
 
@@ -29,13 +30,15 @@ public class BlockListener implements Listener{
 		boolean inZone = false;
 		
 		for (String key: plugin.zoneMap.keySet()) {
-			for (int i = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockX(); i != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockX(); i++) {
-				for (int o = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockZ(); o != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockZ(); o++) {
-					if (i == block.getLocation().getBlockX() && o == block.getLocation().getBlockZ() && player.isOp() == false) {
-						inZone = true;
-						for (Player p: Bukkit.getServer().getOnlinePlayers()) {
-							p.sendMessage(ChatColor.GOLD + "DEV -> "
-									+ ChatColor.DARK_PURPLE + "Block InZone");
+			if (plugin.zoneMap.get(key).get("Params").get("Break").getBool() == false) {
+				for (int i = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockX(); i != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockX(); i++) {
+					for (int o = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockZ(); o != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockZ(); o++) {
+						if (i == block.getLocation().getBlockX() && o == block.getLocation().getBlockZ() /*&& player.isOp() == false*/) {
+							inZone = true;
+							for (Player p: Bukkit.getServer().getOnlinePlayers()) {
+								p.sendMessage(ChatColor.GOLD + "DEV -> "
+										+ ChatColor.DARK_PURPLE + "Block InZone");
+							}
 						}
 					}
 				}
@@ -81,5 +84,35 @@ public class BlockListener implements Listener{
 				}
 			}
 		}
+	}
+	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onBlockPlace (BlockPlaceEvent event) {
+		Block block = event.getBlock();
+		Player player = event.getPlayer();
+		
+		boolean inZone = false;
+		for (String key: plugin.zoneMap.keySet()) {
+			if (plugin.zoneMap.get(key).get("Params").get("Build").getBool() == false) {
+				for (int i = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockX(); i != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockX(); i++) {
+					for (int o = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockZ(); o != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockZ(); o++) {
+						if (i == block.getLocation().getBlockX() && o == block.getLocation().getBlockZ() /*&& player.isOp() == false*/) {
+							inZone = true;
+							for (Player p: Bukkit.getServer().getOnlinePlayers()) {
+								p.sendMessage(ChatColor.GOLD + "DEV -> "
+										+ ChatColor.DARK_PURPLE + "Block InZone (place)");
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (inZone == true) {
+			event.setCancelled(true);
+		}
+		
+		player.sendMessage(ChatColor.GOLD + "DEV -> "
+				+ ChatColor.DARK_PURPLE + "Block Placed!");
 	}
 }

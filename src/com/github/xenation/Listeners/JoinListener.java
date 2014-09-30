@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -39,21 +38,14 @@ public class JoinListener implements Listener{
 				e.printStackTrace();
 			}
 		}
-		
-		try {
-			config.load(file);
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	@EventHandler
 	public void OnPlayerJoin(PlayerJoinEvent event) {
-		
 		Player player = event.getPlayer();
-		String message = config.getString("joinmessage");
-		player.sendMessage(ChatColor.RED + message);
+		String message = plugin.joinMessage;
 		
+		player.sendMessage(ChatColor.RED + message);
 		plugin.chat.put(player.getName(), "default");
 	}
 }

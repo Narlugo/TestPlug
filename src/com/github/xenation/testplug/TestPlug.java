@@ -22,22 +22,25 @@ import com.github.xenation.Listeners.WeatherListener;
 
 public class TestPlug extends JavaPlugin {
 	
+	//HashMaps
 	public HashMap<String, String> chat = new HashMap<String, String>();
-	public HashMap<String, String> countdown = new HashMap<String, String>();
 	public HashMap<String, HashMap<String, HashMap<String, Param>>> zoneMap = new HashMap<String, HashMap<String, HashMap<String, Param>>>();
-	
 	public HashMap<Block, Double> blocksSet = new HashMap<Block, Double>();
 	public HashMap<Double, BlockState> blocksStatesMap = new HashMap<Double, BlockState>();
 	public HashMap<Double, Long> blocksTimesMap = new HashMap<Double, Long>();
 	
+	//booleans
 	public boolean weatherLock = true;
 	public boolean blockResLock = true;
 	
-	public Long blockResTime = 120000L;
+	//Numeric Values
+	public long blockResTime = 120000L;
+	
+	//Strings
+	public String joinMessage = "";
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	//Called when plugin starts
@@ -63,37 +66,57 @@ public class TestPlug extends JavaPlugin {
 		if (!(folder).exists()) {
 			folder.mkdir();
 		}
-		//checks if the Configuration.yml file exists
+		//checks if the Configuration.yml file doesn't exists
 		if (!(config).exists()) {
+			//Creates the Configuration.yml File
 			try {
 				config.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			//Loads Configuration.yml
+			try {
+				cfg.load(config);
+			} catch (IOException | InvalidConfigurationException e) {
+				e.printStackTrace();
+			}
+			//Sets the default values
+			cfg.set("joinmessage", "TestPluging Working!\nWelcome to Xenation's Server!");
+			cfg.set("weatherLock", weatherLock);
+			cfg.set("blockResLock", blockResLock);
+			cfg.set("blockResTime", blockResTime);
+			//Saves Configuration.yml
+			try {
+				cfg.save(config);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			//Loads Configuration.yml
+			try {
+				cfg.load(config);
+			} catch (IOException | InvalidConfigurationException e) {
+				e.printStackTrace();
+			}
+			//Gets the values
+			joinMessage = cfg.getString("joinmessage");
+			weatherLock = cfg.getBoolean("weatherLock");
+			blockResLock = cfg.getBoolean("blockResLock");
+			blockResTime = cfg.getLong("blockresTime");
+			//Saves Configuration.yml
+			try {
+				cfg.save(config);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		//checks if the Zones.yml file exists
+		//checks if the Zones.yml file doesn't exists
 		if (!(zonesFile).exists()) {
 			try {
 				zonesFile.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
-		
-		//tries to load the Configuration.yml file
-		try {
-			cfg.load(config);
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
-		//Sets the joinmessage value in the Configuration.yml file
-		cfg.set("joinmessage", "TestPluging Working!\nWelcome to Xenation's Server!");
-		cfg.set("weatherLock", weatherLock);
-		//tries to save the Configuration.yml File
-		try {
-			cfg.save(config);
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 		//Load Zones.yml
@@ -105,7 +128,6 @@ public class TestPlug extends JavaPlugin {
 		//Loads zonesMap and zones
 		Location locpos1 = Bukkit.getServer().getWorld("world").getSpawnLocation();
 		Location locpos2 = Bukkit.getServer().getWorld("world").getSpawnLocation();
-		
 		for (String str: zonesCfg.getKeys(false)) {
 			for (String str2: zonesCfg.getConfigurationSection(str + ".Positions").getKeys(false)) {
 				if (str2.equalsIgnoreCase("pos1")) {
@@ -120,8 +142,16 @@ public class TestPlug extends JavaPlugin {
 			zoneMap.get(str).put("Positions", new HashMap<String, Param>());
 			zoneMap.get(str).get("Positions").put("pos1", new Param(locpos1.clone()));
 			zoneMap.get(str).get("Positions").put("pos2", new Param(locpos2.clone()));
+			if (zonesCfg.contains(str+".Params")) {
+				zoneMap.get(str).put("Params", new HashMap<String, Param>());
+				zoneMap.get(str).get("Params").put("TNT", new Param(zonesCfg.getBoolean(str + ".Params.TNT")));
+				zoneMap.get(str).get("Params").put("Break", new Param(zonesCfg.getBoolean(str + ".Params.Break")));
+				zoneMap.get(str).get("Params").put("Build", new Param(zonesCfg.getBoolean(str + ".Params.Build")));
+				zoneMap.get(str).get("Params").put("Access", new Param(zonesCfg.getBoolean(str + ".Params.Acces")));
+				zoneMap.get(str).get("Params").put("Use", new Param(zonesCfg.getBoolean(str + ".Params.Use")));
+			}
 		}
-		//saves Zones.yml
+		//Saves Zones.yml
 		try {
 			zonesCfg.save(zonesFile);
 		} catch (IOException e) {
@@ -159,6 +189,28 @@ public class TestPlug extends JavaPlugin {
 		//Respawns the Blocks in blocksSet HashMap
 		for (Block b: blocksSet.keySet()) {
 			blocksStatesMap.get(blocksSet.get(b)).update(true);
+		}
+		
+		//Plugin Folder
+		File folder = this.getDataFolder();
+		//Configuration.yml File
+		File config = new File(folder, "Configuration.yml");
+		YamlConfiguration cfg = new YamlConfiguration();
+		try {
+			cfg.load(config);
+		} catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
+		//Sets the joinmessage value in the Configuration.yml file
+		cfg.set("joinmessage", joinMessage);
+		cfg.set("weatherLock", weatherLock);
+		cfg.set("blockResLock", blockResLock);
+		cfg.set("blockResTime", blockResTime);
+		//tries to save the Configuration.yml File
+		try {
+			cfg.save(config);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

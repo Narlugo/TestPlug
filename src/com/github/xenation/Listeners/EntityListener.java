@@ -30,13 +30,15 @@ public class EntityListener implements Listener {
 		}
 		
 		for (String key: plugin.zoneMap.keySet()) {
-			for (int i = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockX(); i != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockX(); i++) {
-				for (int o = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockZ(); o != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockZ(); o++) {
-					if (i == entity.getLocation().getBlockX() && o == entity.getLocation().getBlockZ()) {
-						inZone = true;
-						for (Player p: Bukkit.getServer().getOnlinePlayers()) {
-							p.sendMessage(ChatColor.GOLD + "DEV -> "
-									+ ChatColor.DARK_PURPLE + "Entity InZone");
+			if (plugin.zoneMap.get(key).get("Params").get("TNT").getBool() == false) {
+				for (int i = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockX(); i != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockX(); i++) {
+					for (int o = plugin.zoneMap.get(key).get("Positions").get("pos1").getLoc().getBlockZ(); o != plugin.zoneMap.get(key).get("Positions").get("pos2").getLoc().getBlockZ(); o++) {
+						if (i == entity.getLocation().getBlockX() && o == entity.getLocation().getBlockZ()) {
+							inZone = true;
+							for (Player p: Bukkit.getServer().getOnlinePlayers()) {
+								p.sendMessage(ChatColor.GOLD + "DEV -> "
+										+ ChatColor.DARK_PURPLE + "Entity InZone");
+							}
 						}
 					}
 				}
@@ -56,5 +58,4 @@ public class EntityListener implements Listener {
 			}
 		}
 	}
-	
 }
