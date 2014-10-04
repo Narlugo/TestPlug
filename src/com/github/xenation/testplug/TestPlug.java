@@ -2,14 +2,17 @@ package com.github.xenation.testplug;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -32,6 +35,7 @@ public class TestPlug extends JavaPlugin {
 	//booleans
 	public boolean weatherLock = true;
 	public boolean blockResLock = true;
+	public boolean allowSprintBreak = true;
 	
 	//Numeric Values
 	public long blockResTime = 120000L;
@@ -85,6 +89,7 @@ public class TestPlug extends JavaPlugin {
 			cfg.set("weatherLock", weatherLock);
 			cfg.set("blockResLock", blockResLock);
 			cfg.set("blockResTime", blockResTime);
+			cfg.set("allowSprintBreak", allowSprintBreak);
 			//Saves Configuration.yml
 			try {
 				cfg.save(config);
@@ -103,6 +108,7 @@ public class TestPlug extends JavaPlugin {
 			weatherLock = cfg.getBoolean("weatherLock");
 			blockResLock = cfg.getBoolean("blockResLock");
 			blockResTime = cfg.getLong("blockresTime");
+			allowSprintBreak = cfg.getBoolean("allowSprintBreak");
 			//Saves Configuration.yml
 			try {
 				cfg.save(config);
@@ -168,7 +174,6 @@ public class TestPlug extends JavaPlugin {
 		pm.registerEvents(new BlockListener(this), this);
 		pm.registerEvents(new EntityListener(this), this);
 		pm.registerEvents(new WeatherListener(this), this);
-		//pm.registerEvents(new SprintListener(this), this);    Disabled until further Development
 		
 		//Commands
 		getCommand("chat").setExecutor(new Commands(this));
@@ -182,6 +187,90 @@ public class TestPlug extends JavaPlugin {
 		getCommand("weatherlock").setExecutor(new Commands(this));
 		getCommand("blockres").setExecutor(new Commands(this));
 		getCommand("warp").setExecutor(new Commands(this));
+		
+		//SCHEDULES
+		//Sprint Glass Break
+		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
+			public void run(){
+				if (allowSprintBreak == true) {
+					for (Player p: Bukkit.getServer().getOnlinePlayers()) {
+						if (p.isSprinting() == true) {
+							Location loc = p.getLocation();
+							Location locf = loc;
+							//Player Looking Direction Detection
+							if (loc.getYaw() > 337.5d || loc.getYaw() >= 0 && loc.getYaw() < 22.5d) {
+								locf.setX(loc.getX());
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ() + 1);
+							} else if (loc.getYaw() > 22.5d && loc.getYaw() < 67.5d) {
+								locf.setX(loc.getX() - 1);
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ() + 1);
+							} else if (loc.getYaw() > 67.5d && loc.getYaw() < 112.5d) {
+								locf.setX(loc.getX() - 1);
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ());
+							} else if (loc.getYaw() > 112.5d && loc.getYaw() < 157.5d) {
+								locf.setX(loc.getX() - 1);
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ() - 1);
+							} else if (loc.getYaw() > 157.5d && loc.getYaw() < 202.5d) {
+								locf.setX(loc.getX());
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ() - 1);
+							} else if (loc.getYaw() > 202.5d && loc.getYaw() < 247.5d) {
+								locf.setX(loc.getX() + 1);
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ() - 1);
+							} else if (loc.getYaw() > 247.5d && loc.getYaw() < 292.5d) {
+								locf.setX(loc.getX() + 1);
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ());
+							} else if (loc.getYaw() > 292.5d && loc.getYaw() < 337.5d) {
+								locf.setX(loc.getX() + 1);
+								locf.setY(loc.getY() + 1);
+								locf.setZ(loc.getZ() + 1);
+							}
+							
+							//Glass Block Breaking
+							if (Bukkit.getWorld("world").getBlockAt(locf).getType().equals(Material.GLASS)) {
+								Bukkit.getWorld("world").getBlockAt(locf).breakNaturally();
+							}
+							if (Bukkit.getWorld("world").getBlockAt(locf.getBlockX(), locf.getBlockY()+1, locf.getBlockZ()).getType().equals(Material.GLASS)) {
+								Bukkit.getWorld("world").getBlockAt(locf.getBlockX(), locf.getBlockY()+1, locf.getBlockZ()).breakNaturally();
+							}
+							if (Bukkit.getWorld("world").getBlockAt(locf.getBlockX(), locf.getBlockY()-1, locf.getBlockZ()).getType().equals(Material.GLASS)) {
+								Bukkit.getWorld("world").getBlockAt(locf.getBlockX(), locf.getBlockY()-1, locf.getBlockZ()).breakNaturally();
+							}
+							if (Bukkit.getWorld("world").getBlockAt(locf.getBlockX(), locf.getBlockY()-2, locf.getBlockZ()).getType().equals(Material.GLASS)) {
+								Bukkit.getWorld("world").getBlockAt(locf.getBlockX(), locf.getBlockY()-2, locf.getBlockZ()).breakNaturally();
+							}
+						}
+					}
+				}
+			}
+		}, 0, 1);
+		//Block Re-spawn
+		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable(){
+			public void run(){
+				if (blockResLock == true) {
+					//HashMap Spawn
+					ArrayList<Block> delBlocks = new ArrayList<Block>();
+					for (Block b: blocksSet.keySet()) {
+						if (System.currentTimeMillis() >= blocksTimesMap.get(blocksSet.get(b)) + blockResTime) {
+							blocksStatesMap.get(blocksSet.get(b)).update(true);
+							delBlocks.add(b);
+						}
+					}
+					for (int d = 0; d != delBlocks.toArray().length; d++) {
+						Block b = delBlocks.get(d);
+						blocksTimesMap.remove(blocksSet.get(b));
+						blocksStatesMap.remove(blocksSet.get(b));
+						blocksSet.remove(b);
+					}
+				}
+			}
+		}, 0, 20);
 	}
 	
 	//Called when plugin stops
@@ -206,6 +295,7 @@ public class TestPlug extends JavaPlugin {
 		cfg.set("weatherLock", weatherLock);
 		cfg.set("blockResLock", blockResLock);
 		cfg.set("blockResTime", blockResTime);
+		cfg.set("allowSprintBreak", allowSprintBreak);
 		//tries to save the Configuration.yml File
 		try {
 			cfg.save(config);

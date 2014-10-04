@@ -13,7 +13,7 @@ _____      ____  ________________ _____            __ ______________ ____       
                                                  \ XEN-PLUG /
                                                   \________/
 
-Version: 0.12 (Alpha)
+Version: 0.14 (Alpha)
 
 ----====|INFORMATIONS|====----
 This Plugin is meant to be used in a server with the Flan's Mod Installed (Currently works fine without)
@@ -37,8 +37,7 @@ FEATURES:
  - Block Respawn :
  	"/blockres" Command, you can make the broken block respawn after some time
  		- "lock" activates/deactivates the block respawn (ex: /blockres lock)
- 		- "time" Sets the time before blocks can respawn in milliseconds (ex: /blockres time 20000)
- 	Please note that the blocks respawns ONLY when another block is broken
+ 		- "time" Sets the time before the block respawns in milliseconds (ex: /blockres time 20000)
  	All the blocks will respawn before the server closes/restarts/reloads
  - Spawn Point Managing :
  	"/Xspawn" Command, you can change the spawn or find it
@@ -56,14 +55,12 @@ FEATURES:
  - Multi-Worlds :
  	"/warp" Command, you can create a new world or tp to an existing one (ex: /warp testworld)
  	If the entered world name doesn't corresponds to an existing one it will create it
+ - Sprint Glass Breaking :
+ 	"/Xsprint" Command, you can switch on/off the glass breaking in front of you when sprinting
 
 
 ----=======|TO DO|========----
- - Sprint Glass Breaking :
-	Breaks glass blocks in front of the player when the player sprints
  - Glass Broken by gun bullets bug (Flan's Mod) :
- 	Save the glass blocks broken by bullets from the Flan's Mod guns
- - Commands Errors Fixes :
- 	Fix the Errors in the console when a command is typed with the wrong arguments
+ 	Save the glass blocks broken by bullets from the Flan's Mod guns, Currently not implemented because bullets that break glass doesn't call any event
  - Block Set Command Fix ("/setb") :
  	Currently too messy and hard to use

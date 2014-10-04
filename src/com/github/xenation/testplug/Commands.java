@@ -505,10 +505,7 @@ public class Commands implements CommandExecutor {
 					}
 				}
 			} else {
-				player.sendMessage(ChatColor.GOLD + "DEV -> "
-						+ ChatColor.DARK_AQUA + "Spawn TP Called!\n"
-								+ ChatColor.DARK_RED + "       ERROR: "
-								+ ChatColor.RED + "invalid number of arguments");
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid arguments");
 			}
 		}
 		
@@ -552,11 +549,28 @@ public class Commands implements CommandExecutor {
 								+ ChatColor.DARK_PURPLE + "BlockResTime = " + plugin.blockResTime);
 					}
 				}
+			} else {
+				player.sendMessage(ChatColor.DARK_RED + "ERROR: " + ChatColor.RED + "Invalid arguments");
+			}
+		}
+		
+		//Sprint Glass Break
+		if (label.equalsIgnoreCase("xsprint") && player.isOp() == true) {
+			if (plugin.allowSprintBreak == true) {
+				plugin.allowSprintBreak = false;
+			} else {
+				plugin.allowSprintBreak = true;
+			}
+			for (Player p: Bukkit.getServer().getOnlinePlayers()) {
+				if (p.isOp() == true) {
+					p.sendMessage(ChatColor.GOLD + "DEV -> "
+							+ ChatColor.DARK_PURPLE + "allowSprintBreak = " + plugin.allowSprintBreak);
+				}
 			}
 		}
 		
 		//World Change Command
-		if (label.equalsIgnoreCase("warp")) {
+		if (label.equalsIgnoreCase("warp") && player.isOp() == true) {
 			boolean create = true;
 			Server server = Bukkit.getServer();
 			World world;

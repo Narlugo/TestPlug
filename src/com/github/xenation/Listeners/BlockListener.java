@@ -1,7 +1,5 @@
 package com.github.xenation.Listeners;
 
-import java.util.ArrayList;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -51,21 +49,6 @@ public class BlockListener implements Listener{
 		
 		//Block Re-spawn
 		if (plugin.blockResLock == true) {
-			//HashMap Spawn
-			ArrayList<Block> delBlocks = new ArrayList<Block>();
-			for (Block b: plugin.blocksSet.keySet()) {
-				if (System.currentTimeMillis() >= plugin.blocksTimesMap.get(plugin.blocksSet.get(b)) + plugin.blockResTime) {
-					plugin.blocksStatesMap.get(plugin.blocksSet.get(b)).update(true);
-					delBlocks.add(b);
-				}
-			}
-			for (int d = 0; d != delBlocks.toArray().length; d++) {
-				Block b = delBlocks.get(d);
-				plugin.blocksTimesMap.remove(plugin.blocksSet.get(b));
-				plugin.blocksStatesMap.remove(plugin.blocksSet.get(b));
-				plugin.blocksSet.remove(b);
-			}
-			
 			//Saves the breaked block
 			//HashMap Save
 			double unique = Math.random();
